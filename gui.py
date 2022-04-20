@@ -2,8 +2,8 @@ import dearpygui.dearpygui as dpg
 import Handler
 import os
 
-WIDTH = 1200
-HEIGHT = 720
+WIDTH = 1500
+HEIGHT = 800
 
 def main():
 
@@ -37,9 +37,10 @@ def main():
     def Start():
         dpg.delete_item('f_window')
 
-        with dpg.window(label="", tag='loading_window', width=WIDTH, height=HEIGHT, modal=True, no_move=True,
+        with dpg.window(tag='loading_window', width=WIDTH, height=HEIGHT, modal=True, no_move=True,
                         no_collapse=True, no_close=True, no_title_bar=True):
-            dpg.add_loading_indicator(label='loading', pos=[int(WIDTH/2) - 30, int(HEIGHT/2) - 30], radius=15.0)
+            dpg.add_loading_indicator(label='loading', width=WIDTH, height=HEIGHT,
+                                      pos=[int(WIDTH/2) - 70, int(HEIGHT/2) - 50], radius=15.0)
 
         if (dpg.get_value("bool_value_1")):
             Handler.Start(int(1))
@@ -95,12 +96,15 @@ def main():
         os.system("MOVE C:\\Users\\A\\PycharmProjects\\PI\\POST_NAME_proglib.csv, " + str(path))# C:\\test")
 
         # Вывод сообщения о сохранении
-        with dpg.window(tag='saved_window', autosize=True, pos=[400, 300]):
+        dpg.delete_item('cloud')
+        dpg.delete_item('window')
+        dpg.delete_item('slider_window')
+        with dpg.window(tag='saved_window', autosize=True, pos=[int(WIDTH/2), int(HEIGHT/2)]):
             dpg.add_text("Seved", tag='text_saved')
         width, height, channels, data = dpg.load_image("Save.png")
         with dpg.texture_registry(show=False):
             dpg.add_static_texture(width, height, data, tag="save")
-        with dpg.window(tag='save_window', autosize=True, pos=[300]):
+        with dpg.window(tag='save_window', autosize=True, pos=[int(WIDTH/2)-int(width/2), 0], popup=True):
             dpg.add_image("save")
 
     with dpg.value_registry():
@@ -128,7 +132,7 @@ def main():
             width, height, channels, data = dpg.load_image("Cloud_" + str(dpg.get_value('slider_value_1')) + ".png")
             with dpg.texture_registry(show=False):
                 dpg.add_static_texture(width, height, data, tag="cloud")
-            with dpg.window(tag='window', autosize=True, pos=[300]):
+            with dpg.window(tag='window', autosize=True, pos=[int(WIDTH/2)-int(width/2), 0]):
                 dpg.add_image("cloud")
         """if (dpg.get_value('slider_value_1') == 0):
                 print(0)
@@ -162,17 +166,17 @@ def main():
             with dpg.window(tag='window', autosize=True, pos=[300]):
                 dpg.add_image("cloud")"""
 
-        # Дефолт пpи ошибки парса
-        width, height, channels, data = dpg.load_image("cat1.jpg")
+        # Дефолт
+        width, height, channels, data = dpg.load_image("Cloud_1.png")
         with dpg.texture_registry(show=False):
             dpg.add_static_texture(width, height, data, tag="cloud")
-        with dpg.window(tag='window', autosize=True, pos=[300]):
+        with dpg.window(tag='window', autosize=True, pos=[int(WIDTH/2)-int(width/2), 0]):
             dpg.add_image("cloud")
 
         with dpg.value_registry():
             dpg.add_int_value(default_value=0, tag='slider_value_1')
 
-        with dpg.window(pos=[300, 600], width=640, height=10):
+        with dpg.window(tag='slider_window', pos=[300, 600], width=645, height=10):
             dpg.add_slider_int(source='slider_value_1', default_value=1, min_value=1, max_value=12,
                                callback=lambda: Load(), width=640, height=5)
             dpg.add_button(label='Save', width=100, height=50, callback= lambda: Save())
