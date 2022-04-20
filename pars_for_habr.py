@@ -24,20 +24,22 @@ TIME = []
 POST_NAME_AND_TIME = []
 
 # Выборка темы, пока просто вписываем, потом через gui
-def Start():
+def Start(topic):
+    """
     print("Выберите одну из предложенных тем:")
     print("Разработка")
     print("Администрирование")
     print("Дизайн")
     print("Маркетинг")
     topic = str(input())
-    if (topic == "Разработка"):
+    """
+    if (int(topic) == 1):
         URL = URLS[0]
-    elif (topic == "Администрирование"):
+    elif (int(topic) == 2):
         URL = URLS[1]
-    elif (topic == "Дизайн"):
+    elif (int(topic) == 3):
         URL = URLS[2]
-    elif (topic == "Маркетинг"):
+    elif (int(topic) == 4):
         URL = URLS[3]
     print(URL)
     Parse(URL)
@@ -95,11 +97,11 @@ def Get_Text_Post():
 # Создание csv файлов. Первый с текстом статей, второй название статей + дата публикации
 def Collect_CSV():
     df_post = pd.DataFrame(data=TEXT)
-    df_post.to_csv('POST.csv')
+    df_post.to_csv('POST_habr.csv')
     for i in range(len(POST_NAME)):
         POST_NAME_AND_TIME.append([POST_NAME[i], TIME[i]])
     df_postName = pd.DataFrame(data=POST_NAME_AND_TIME)
-    df_postName.to_csv('POST_NAME.csv')
+    df_postName.to_csv('POST_NAME_habr.csv')
 
 # Сбор облака слов по названиям статей (не используется)
 # def World_Cloud():
@@ -117,28 +119,16 @@ def Get_Time(time_post):
         patt_time = 'datetime="(.+)" '
         TIME.append(re.findall(patt_time, str(time_post[i])))
 
-# Отрисовка облаков слов по месяцам (без привязки к году)
-def Timelaps():
-    for month in range(1, 13):
-        cloud = ['none']
-        for i in range(len(POST_NAME)):
-            if (int(str(POST_NAME_AND_TIME[0][1])[7:9]) <= month):
-                cloud.append(POST_NAME[i])
 
-        nltk.download('stopwords', quiet=1)
-        stop_words = stopwords.words('russian')
-        print(stop_words)
-        wordcloud = WordCloud(max_font_size=40, stopwords=stop_words).generate(str(cloud))
-        plt.figure()
-        plt.imshow(wordcloud, interpolation="bilinear")
-        plt.axis("off")
-        plt.savefig('Cloud_' + str(month))
-
-def main():
-    Start()
+def main(topic):
+    Start(topic)
     Collect_CSV()
+    # Timelaps()
+
+    return int(1)
+
     #World_Cloud()
-    Timelaps()
+
 
 if __name__ == "__main__":
-    main()
+    main(None)
