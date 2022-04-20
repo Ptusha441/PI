@@ -1,7 +1,9 @@
 import pars_for_habr
 import pars_for_proglib
 import gui
-
+"""
+    Hellow
+"""
 from wordcloud import WordCloud
 import nltk
 import matplotlib.pyplot as plt
