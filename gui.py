@@ -45,16 +45,16 @@ def main():
                                       pos=[int(WIDTH/2) - 70, int(HEIGHT/2) - 50], radius=15.0)
         # Выборка темы с помощью радиокнопок
         if (dpg.get_value("bool_value_1")):
-            Handler.Start(int(1))
+            Handler.Start(int(1), int(dpg.get_value('max_page')))
             print(1)
         elif (dpg.get_value("bool_value_2")):
-            Handler.Start(int(2))
+            Handler.Start(int(2), int(dpg.get_value('max_page')))
             print(2)
         elif (dpg.get_value("bool_value_3")):
-            Handler.Start(int(3))
+            Handler.Start(int(3), int(dpg.get_value('max_page')))
             print(3)
         elif (dpg.get_value("bool_value_4")):
-            Handler.Start(int(4))
+            Handler.Start(int(4), int(dpg.get_value('max_page')))
             print(4)
 
         dpg.delete_item('loading_window')   # Удаление окна загрузки
@@ -106,26 +106,30 @@ def main():
         with dpg.window(label='Saved', tag='save_window', autosize=True, pos=[int(WIDTH/2)-int(width), 0], popup=True):
             dpg.add_image("save")
 
-    # Реализация переключения радиокнопок и строки ввода
-    with dpg.value_registry():
-        dpg.add_bool_value(default_value=True, tag="bool_value_1")
-        dpg.add_bool_value(default_value=False, tag="bool_value_2")
-        dpg.add_bool_value(default_value=False, tag="bool_value_3")
-        dpg.add_bool_value(default_value=False, tag="bool_value_4")
-        dpg.add_string_value(default_value="Enter the path to save the archive", tag="string_value")
+    # Функция отрисовки первого окна
+    def First_window():
+        # Реализация переключения радиокнопок и строки ввода
+        with dpg.value_registry():
+            dpg.add_bool_value(default_value=True, tag="bool_value_1")
+            dpg.add_bool_value(default_value=False, tag="bool_value_2")
+            dpg.add_bool_value(default_value=False, tag="bool_value_3")
+            dpg.add_bool_value(default_value=False, tag="bool_value_4")
+            dpg.add_string_value(default_value="Enter the path to save the archive", tag="string_value")
+            dpg.add_string_value(default_value="2", tag='max_page')
 
-    # Добавление элементов в окно
-    with dpg.window(label="Select topic", tag='f_window', width=WIDTH, height=HEIGHT):
-        # Добавление радиокнопок
-        dpg.add_checkbox(label="Develop", source="bool_value_1", callback=lambda: Off_Except_1())
-        dpg.add_checkbox(label="Admin", source="bool_value_2", callback=lambda: Off_Except_2())
-        dpg.add_checkbox(label="Design", source="bool_value_3", callback=lambda: Off_Except_3())
-        dpg.add_checkbox(label="Marketing", source="bool_value_4", callback=lambda: Off_Except_4())
-        # Добавление строки ввода
-        dpg.add_input_text(label="Save path", source="string_value")
-        # Добавление кнопок
-        dpg.add_button(label='Create folder', width=100, height=50, callback=lambda: Check_Path())
-        dpg.add_button(label='Start', width=100, height=50, callback=lambda: Transition())
+        # Добавление элементов в окно
+        with dpg.window(label="Select topic", tag='f_window', width=WIDTH, height=HEIGHT):
+            # Добавление радиокнопок
+            dpg.add_checkbox(label="Develop", source="bool_value_1", callback=lambda: Off_Except_1())
+            dpg.add_checkbox(label="Admin", source="bool_value_2", callback=lambda: Off_Except_2())
+            dpg.add_checkbox(label="Design", source="bool_value_3", callback=lambda: Off_Except_3())
+            dpg.add_checkbox(label="Marketing", source="bool_value_4", callback=lambda: Off_Except_4())
+            # Добавление строки ввода
+            dpg.add_input_text(label='Max page', source="max_page")
+            dpg.add_input_text(label="Save path", source="string_value")
+            # Добавление кнопок
+            dpg.add_button(label='Create folder', width=100, height=50, callback=lambda: Check_Path())
+            dpg.add_button(label='Start', width=100, height=50, callback=lambda: Transition())
 
     # Функция отрисовки второго окна
     def Second_window():
@@ -157,6 +161,8 @@ def main():
                                callback=lambda: Load(), width=640, height=5)
             dpg.add_button(label='Save', width=100, height=50, callback= lambda: Save())
 
+    # Вызов функции отрисовки первого окна
+    First_window()
     # Отрисовка окна GUI
     dpg.create_viewport(title='Application', width=WIDTH, height=HEIGHT)
     dpg.setup_dearpygui()

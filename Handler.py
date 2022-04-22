@@ -29,7 +29,9 @@ def Timelaps(POST_NAMES, NAME_AND_TIME):
         plt.savefig('Cloud_' + str(month))      # Сохранение изображения в папку с приложением
 
 # Стартовая функция
-def Start(topic):
+def Start(topic, max_page):
+    pars_for_habr.MAX_PAGE = int(max_page)
+    pars_for_proglib.MAX_PAGE = int(max_page)
     x = pars_for_habr.main(topic)
     y = pars_for_proglib.main(topic)
     if (x == 1 and y == 1):     # Проверка отработки парсеров
