@@ -1,12 +1,13 @@
-from wordcloud import WordCloud
-import nltk
-import requests
-from bs4 import BeautifulSoup as bs
-import re
-import pandas as pd
-import matplotlib.pyplot as plt
-from nltk.corpus import stopwords
+import requests     # Библиотека для HTTP-запросов
+from bs4 import BeautifulSoup as bs     # Библиотека для работы с HTML-файлами
+import re       # Библиотека для регулярных строк
+import pandas as pd     # Библиотека для формирования CSV-файлов
+# import matplotlib.pyplot as plt
+# from nltk.corpus import stopwords
+# from wordcloud import WordCloud
+# import nltk
 
+# Список ссылок на темы форума
 URLS = [
     "https://habr.com/ru/flows/develop/",
     "https://habr.com/ru/flows/admin/",
@@ -16,23 +17,15 @@ URLS = [
 
 URL = ""
 
-MAX_PAGE = 2
-POST_NAME = []
-POST_LINKS = []
-TEXT = []
-TIME = []
-POST_NAME_AND_TIME = []
+MAX_PAGE = 2        # Максимальное количество страниц для парсинга
+POST_NAME = []      # Список названий статей
+POST_LINKS = []     # Список ссылок на статьи
+TEXT = []           # Список содержаний статей
+TIME = []           # Список дат публикаций статей
+POST_NAME_AND_TIME = [] # Список названий статей с датой их публикации
 
-# Выборка темы, пока просто вписываем, потом через gui
+# Стартовая функция. Выборка темы осуществляется через gui
 def Start(topic):
-    """
-    print("Выберите одну из предложенных тем:")
-    print("Разработка")
-    print("Администрирование")
-    print("Дизайн")
-    print("Маркетинг")
-    topic = str(input())
-    """
     if (int(topic) == 1):
         URL = URLS[0]
     elif (int(topic) == 2):
@@ -42,93 +35,66 @@ def Start(topic):
     elif (int(topic) == 4):
         URL = URLS[3]
     print(URL)
-    Parse(URL)
+    Parse(URL) # Запуск функции начала парсинга
 
 # Парсинг главной страницы. Собираются названия статей, ссылки на статьи и дата публикации
 def Parse(URL):
-    for i in range(1, MAX_PAGE):
-        URL_TEMPLATE = URL + 'page' + str(i) + '/'
-        r = requests.get(URL_TEMPLATE)
+    for i in range(1, MAX_PAGE+1):  # Цикл по страницам
+        URL_TEMPLATE = URL + 'page' + str(i) + '/'  # Формирование правильной ссылки на страницу форума
+        r = requests.get(URL_TEMPLATE)  # Запрос страницы
         soup = bs(r.text, "html.parser")
-
-        post = soup.find_all('a', class_='tm-article-snippet__title-link')
-        time_post = soup.find_all('time')
-        #print(time_post)
-        Get_Post_Name(post)
-        Get_Post_Link(post)
-        Get_Time(time_post)
-
-        #Timelaps(time_post)
+        post = soup.find_all('a', class_='tm-article-snippet__title-link')  # Поиск части кода с данными поста
+        time_post = soup.find_all('time')   # Поиск даты поста
+        Get_Post_Name(post) # Запуск функции выделения названия статьи
+        Get_Post_Link(post) # Запуск функции выделения ссылки статьи
+        Get_Time(time_post) # Запуск функции выделения даты публикации статьи
 
 # Сбор названий статей без тегов в список
 def Get_Post_Name(post_name):
     pattern_span = "<span>"
     pattern_span1 = "</span>"
     for name in post_name:
-        buf = re.sub(pattern_span, "", str(name.span))
-        POST_NAME.append(re.sub(pattern_span1, "", buf))
+        buf = re.sub(pattern_span, "", str(name.span))  # Удаление первого HTML-тега
+        POST_NAME.append(re.sub(pattern_span1, "", buf))    # Удаление второго HTML-тега и добавление в список
 
 # Сбор ссылок на посты в список
 def Get_Post_Link(post):
     pattern_href = r"/ru/post/[\d]+/"
-    links = re.findall(pattern_href, str(post))
+    links = re.findall(pattern_href, str(post)) # Поиск ссылок на посты
     for i in range(len(links)):
-        POST_LINKS.append("https://habr.com" + links[i])
-    #print(POST_LINKS)
-    Get_Text_Post()
+        POST_LINKS.append("https://habr.com" + links[i])    # Формирование правильных ссылок на посты и добавление в список
+    Get_Text_Post() # Запуск функции сбора текста постов
 
 # Сбор чистого текста статей в список
 def Get_Text_Post():
-    for i in range(len(POST_LINKS)):
+    for i in range(len(POST_LINKS)):    # Цикл по ссылкам постов
         url = POST_LINKS[i]
-        #print(url)
-        req_post = requests.get(url)
+        req_post = requests.get(url)    # Запрос страницы с постом
         soup_post = bs(req_post.text, "html.parser")
-        #text = soup_post.find_all('div', id='post-content-body')
-        #text1 = soup_post.find_all('div', class_="article-formatted-body article-formatted-body_version-2")
-        #text2 = soup_post.find_all('div', xmlns="http://www.w3.org/1999/xhtml")
-        text3 = re.sub(' xmlns="http://www.w3.org/1999/xhtml"', '', str(soup_post.find_all('div', xmlns="http://www.w3.org/1999/xhtml")))
-        #print(text3)
-
-        clear_text = re.sub(r'\<[^>]*\>', ' ', text3)
-
-        TEXT.append(clear_text)
+        text3 = re.sub(' xmlns="http://www.w3.org/1999/xhtml"', '',
+                       str(soup_post.find_all('div', xmlns="http://www.w3.org/1999/xhtml")))    # Выборка текста из поста
+        clear_text = re.sub(r'\<[^>]*\>', ' ', text3)   # Очистка текста от HTML-тегов
+        TEXT.append(clear_text) # Сбор текста в список
 
 # Создание csv файлов. Первый с текстом статей, второй название статей + дата публикации
 def Collect_CSV():
     df_post = pd.DataFrame(data=TEXT)
-    df_post.to_csv('POST_habr.csv')
+    df_post.to_csv('POST_habr.csv') # Создание CSV-фалка с содержимым статей
     for i in range(len(POST_NAME)):
-        POST_NAME_AND_TIME.append([POST_NAME[i], TIME[i]])
+        POST_NAME_AND_TIME.append([POST_NAME[i], TIME[i]])  # Сбор списка с названиями статей и датами публикации
     df_postName = pd.DataFrame(data=POST_NAME_AND_TIME)
-    df_postName.to_csv('POST_NAME_habr.csv')
-
-# Сбор облака слов по названиям статей (не используется)
-# def World_Cloud():
-#     nltk.download('stopwords')
-#     stop_words = stopwords.words('russian')
-#     wordcloud = WordCloud(max_font_size=40, stopwords=stop_words).generate(str(POST_NAME))
-#     plt.figure()
-#     plt.imshow(wordcloud, interpolation="bilinear")
-#     plt.axis("off")
-#     plt.savefig('Cloud')
+    df_postName.to_csv('POST_NAME_habr.csv')    # Создание CSV-файлов с названиями статей и датами публикации
 
 # Сбор даты публикации в список
 def Get_Time(time_post):
     for i in range(len(time_post)):
         patt_time = 'datetime="(.+)" '
-        TIME.append(re.findall(patt_time, str(time_post[i])))
-
+        TIME.append(re.findall(patt_time, str(time_post[i])))   # Добавление дат публикации в список
 
 def main(topic):
-    Start(topic)
-    Collect_CSV()
-    # Timelaps()
-
+    Start(topic)    # Запуск стартовой функции
+    Collect_CSV()   # Запуск функции для сборки CSV-файлов
     return int(1)
-
-    #World_Cloud()
-
 
 if __name__ == "__main__":
     main(None)
